@@ -6,8 +6,14 @@
 #include<optional>
 #include<set>
 namespace re {
+	struct Vertex {
+		float pos[2];
+		float color[3];
+	};
 
 
+	void init(GLFWwindow* window);
+	void render();
 	class Device {
 		
 	public:
@@ -175,6 +181,7 @@ namespace re {
 		VkBuffer		 buffer_;
 		VkDeviceMemory	 memory_;
 		VkDeviceSize	 size_;
+		Device*			 device_;
 
 	};
 

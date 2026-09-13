@@ -87,7 +87,7 @@ void Swapchain::createImageViews() {
 			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			viewInfo.subresourceRange.baseMipLevel = 0;
 			viewInfo.subresourceRange.levelCount = 1;
-			viewInfo.subresourceRange.baseArrayLayer = 1;
+			viewInfo.subresourceRange.baseArrayLayer = 0;
 			viewInfo.subresourceRange.layerCount = 1;
 
 			VkResult result = vkCreateImageView(device_->get(), &viewInfo, nullptr, &imageViews_[i]);

@@ -1,23 +1,32 @@
-﻿add_executable (REngine "REngine/REngine.cpp" "REngine/REngine.hpp" "main.cpp"
-    "REngine/helpers/device.cpp" "REngine/helpers/swapchain.cpp"
-    "REngine/helpers/render_pass.cpp" "REngine/helpers/buffer.cpp"
-    "REngine/helpers/command_context.cpp" "REngine/helpers/frame_context.cpp"
-    "REngine/helpers/pipeline.cpp")
+﻿set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET REngine PROPERTY CXX_STANDARD 20)
-endif()
-
-target_link_libraries(REngine PRIVATE Vulkan::Vulkan)
+add_executable(REngine 
+    "REngine/REngine.cpp"
+    "REngine/REngine.hpp"
+    "main.cpp"
+    "REngine/helpers/device.cpp"
+    "REngine/helpers/swapchain.cpp"
+    "REngine/helpers/render_pass.cpp"
+    "REngine/helpers/buffer.cpp"
+    "REngine/helpers/command_context.cpp"
+    "REngine/helpers/frame_context.cpp"
+    "REngine/helpers/pipeline.cpp"
+)
 
 target_include_directories(REngine PRIVATE
-    ${CMAKE_SOURCE_DIR}/thirdparty/glm
+    ${Vulkan_INCLUDE_DIRS}
+)
+
+target_link_libraries(REngine PRIVATE
+    Vulkan::Vulkan
 )
 
 if(WIN32)
     target_include_directories(REngine PRIVATE
         ${CMAKE_SOURCE_DIR}/thirdparty/GLFW/include
     )
+
     target_link_libraries(REngine PRIVATE
         ${CMAKE_SOURCE_DIR}/thirdparty/GLFW/lib/glfw3.lib
     )
@@ -26,8 +35,39 @@ elseif(UNIX)
     target_link_libraries(REngine PRIVATE glfw)
 endif()
 
+
+find_program(GLSLC glslc HINTS "$ENV{VULKAN_SDK}/Bin")
+message(STATUS "GLSLC = ${GLSLC}")
+
+file(GLOB SHADER_SOURCES
+    "${CMAKE_SOURCE_DIR}/src/shaders/*.vert"
+    "${CMAKE_SOURCE_DIR}/src/shaders/*.frag"
+)
+
+set(SPIRV_BINARY_DIR "${CMAKE_SOURCE_DIR}/src/shaders/compiled")
+file(MAKE_DIRECTORY ${SPIRV_BINARY_DIR})
+
+set(SPIRV_BINARY_FILES "")
+
+foreach(SHADER ${SHADER_SOURCES})
+    get_filename_component(SHADER_NAME_WE ${SHADER} NAME_WE)
+    set(SPIRV_OUTPUT "${SPIRV_BINARY_DIR}/${SHADER_NAME_WE}.spv")
+
+    add_custom_command(
+        OUTPUT ${SPIRV_OUTPUT}
+        COMMAND ${GLSLC} ${SHADER} -o ${SPIRV_OUTPUT}
+        DEPENDS ${SHADER}
+        COMMENT "Compiling shader ${SHADER_NAME_WE}"
+    )
+
+    list(APPEND SPIRV_BINARY_FILES ${SPIRV_OUTPUT})
+endforeach()
+
+add_custom_target(Shaders DEPENDS ${SPIRV_BINARY_FILES})
+add_dependencies(REngine Shaders)
+
 add_custom_command(TARGET REngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src/shaders
+    ${SPIRV_BINARY_DIR}
     $<TARGET_FILE_DIR:REngine>/shaders
 )
