@@ -44,8 +44,6 @@ namespace re {
 		std::optional<uint32_t> presentQueueFamilyIndex_	{ std::nullopt   };
 		bool					enableValidation			{ true };
 
-
-
 	};
 
 	class Swapchain {
@@ -68,6 +66,7 @@ namespace re {
 		VkSurfaceFormatKHR chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& avaiableFormats);
 		VkPresentModeKHR choosePresentMode(const std::vector<VkPresentModeKHR>& avaiableModes);
 		VkExtent2D chooseExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
+		Device* device_{ nullptr };
 
 	private:
 		VkSwapchainKHR			 swapchain_		{ VK_NULL_HANDLE };
@@ -89,6 +88,7 @@ namespace re {
 
 	private:
 		VkRenderPass			 renderPass_;
+		Device*					 device_;
 	};
 
 	class Pipeline {
@@ -106,8 +106,9 @@ namespace re {
 		std::vector<char> readFile(const std::string& path);
 
 	private:
-		VkPipelineLayout pipelineLayout_;
-		VkPipeline pipeline_;
+		VkPipelineLayout	pipelineLayout_{ VK_NULL_HANDLE };
+		VkPipeline			pipeline_{ VK_NULL_HANDLE };
+		Device*				device_;
 
 	};
 
@@ -127,8 +128,9 @@ namespace re {
 		~CommandContext();
 
 	private:
-		VkCommandPool				 commandPool_;
+		VkCommandPool				 commandPool_{ VK_NULL_HANDLE };
 		std::vector<VkCommandBuffer> commandBuffer_;
+		Device*						 device_;
 	};
 
 	class FrameContext {
@@ -151,6 +153,7 @@ namespace re {
 		std::vector<VkFence>		 inFlightFence_;
 		std::vector<VkFramebuffer>	 framebuffers_;
 		size_t						 currentFrame_{ 0 };
+		Device*						 device_;
 	};
 
 	class Buffer {

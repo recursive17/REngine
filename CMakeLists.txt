@@ -1,33 +1,16 @@
-﻿add_executable (REngine "REngine/REngine.cpp" "REngine/REngine.hpp" "main.cpp"
-    "REngine/helpers/device.cpp" "REngine/helpers/swapchain.cpp"
-    "REngine/helpers/render_pass.cpp" "REngine/helpers/buffer.cpp"
-    "REngine/helpers/command_context.cpp" "REngine/helpers/frame_context.cpp"
-    "REngine/helpers/pipeline.cpp")
+﻿cmake_minimum_required(VERSION 3.8)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET REngine PROPERTY CXX_STANDARD 20)
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-target_link_libraries(REngine PRIVATE Vulkan::Vulkan)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-target_include_directories(REngine PRIVATE
-    ${CMAKE_SOURCE_DIR}/thirdparty/glm
-)
+project("REngine")
 
-if(WIN32)
-    target_include_directories(REngine PRIVATE
-        ${CMAKE_SOURCE_DIR}/thirdparty/GLFW/include
-    )
-    target_link_libraries(REngine PRIVATE
-        ${CMAKE_SOURCE_DIR}/thirdparty/GLFW/lib/glfw3.lib
-    )
-elseif(UNIX)
-    find_package(glfw3 REQUIRED)
-    target_link_libraries(REngine PRIVATE glfw)
-endif()
+find_package(Vulkan REQUIRED)
 
-add_custom_command(TARGET REngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src/shaders
-    $<TARGET_FILE_DIR:REngine>/shaders
-)
+add_subdirectory("REngine")
