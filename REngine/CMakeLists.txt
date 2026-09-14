@@ -14,7 +14,7 @@ add_executable(REngine
     "REngine/helpers/pipeline.cpp"
     "REngine/utils/helpers/recol.cpp"
     "REngine/utils/helpers/revec.cpp"
- "REngine/helpers/vma_impl.cpp" "REnder/Renderer.cpp")
+ "REngine/helpers/vma_impl.cpp" "REnder/renderer.cpp")
 
 target_include_directories(REngine PRIVATE
     ${Vulkan_INCLUDE_DIRS}
