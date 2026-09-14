@@ -12,7 +12,6 @@ void Device::createInstance(){
 		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		appInfo.apiVersion = VK_API_VERSION_1_3;
 
-//TODO:ADD LOGGING
 
 		auto ext = getRequiredExtensions();
 
@@ -26,37 +25,74 @@ void Device::createInstance(){
 			const char* validationLayers[] = { "VK_LAYER_KHRONOS_validation" };
 			instanceCreateInfo.enabledLayerCount = 1;
 			instanceCreateInfo.ppEnabledLayerNames = validationLayers;
-//TODO: ADD LOGGING
+			re::ReLog::warning(re::Prefix::VULKAN, "validation layers is enabled");
+
 		}
 		else {
+
+			re::ReLog::warning(re::Prefix::VULKAN, "validation layers is disabled");
 			instanceCreateInfo.enabledLayerCount = 0;
 		}
 		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance_);
+		if (result != VK_SUCCESS) {
+			re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create instance"));
+		}
 
-//TODO:PRINT RESULT LOGGING
+		re::ReLog::success(re::Prefix::VULKAN, "instance created");
 
 
 
 }
 void Device::createSurface(GLFWwindow* window) {
 	VkResult result = glfwCreateWindowSurface(instance_, window, nullptr, &surface_);
-//TODO:ADD LOGGING
+	if (result != VK_SUCCESS) {
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create surface"));
+	}
+	re::ReLog::success(re::Prefix::VULKAN, "surface created");
+
 }
 void Device::pickPhysicalDevice() {
 	uint32_t pDeviceCount = 0;
 	vkEnumeratePhysicalDevices(instance_, &pDeviceCount, nullptr);
 	std::vector<VkPhysicalDevice> devices(pDeviceCount);
 	vkEnumeratePhysicalDevices(instance_, &pDeviceCount, devices.data());
-	if (devices.size() > 0) {
-		physicalDevice_ = devices.data()[0];
+	auto bestDeviceIt = std::max_element(devices.begin(), devices.end(),
+		[this](VkPhysicalDevice a, VkPhysicalDevice b) {
+			return rateDevice(a) < rateDevice(b);
+		}
+	);
+
+	if (bestDeviceIt != devices.end() && rateDevice(*bestDeviceIt) > 0) {
+		physicalDevice_ = *bestDeviceIt;
+	}
+	else {
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to find a suitable GPU"));
 	}
 
-	//VkPhysicalDeviceProperties physicalDeviceProperties;
-	//vkGetPhysicalDeviceProperties(devices.data()[0], &physicalDeviceProperties);
-	//std::string gpuName(physicalDeviceProperties.deviceName, VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(physicalDevice_, &physicalDeviceProperties);
+		std::string gpuName(physicalDeviceProperties.deviceName, VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
+		re::ReLog::success(re::Prefix::VULKAN, "selected gpu: " + gpuName);
 
-//TODO: ADD LOGGING
+	}
 
+
+}
+int Device::rateDevice(VkPhysicalDevice device) {
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(device, &deviceProperties);
+	int score = 0;
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+		score += 1000;
+	}
+	else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+		score += 500;
+	}
+
+	score += deviceProperties.limits.maxImageDimension2D;
+	
+	return score;
 }
 void Device::findQueueFamilies() {
 	uint32_t queueFamilyCount = 0;
@@ -108,7 +144,12 @@ void Device::createLogicalDevice() {
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 
 	VkResult result = vkCreateDevice(physicalDevice_, &deviceCreateInfo, nullptr, &device_);
-//TODO: ADD CHECK RESULT
+
+	if (result != VK_SUCCESS) {
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create logical device GPU"));
+	}
+	re::ReLog::success(re::Prefix::VULKAN, "logical device created!");
+
 
 	vkGetDeviceQueue(device_, graphicsQueueFamilyIndex_.value(), 0, &graphicsQueue_);
 	vkGetDeviceQueue(device_, presentQueueFamilyIndex_.value(), 0, &presentQueue_);
@@ -156,9 +197,6 @@ Device::~Device() {
 
 }
 
-//bool Device::checkValidationSupport() {
-//
-//}
 std::vector<const char*> Device::getRequiredExtensions() {
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -181,8 +219,9 @@ void Device::createAllocator() {
 		allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 
 	if (vmaCreateAllocator(&allocatorInfo, &allocator_)!=VK_SUCCESS) {
-		throw std::runtime_error("failed to create allocator");
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create vma allocator"));
 	}
+	re::ReLog::success(re::Prefix::VULKAN, "vma allocator created");
 
 }
 VmaAllocator Device::getAllocator()const {

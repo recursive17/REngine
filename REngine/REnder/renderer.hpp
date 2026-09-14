@@ -20,24 +20,24 @@ namespace render {
         void drawVertices(const re::Vertex* vertices, uint32_t count);
         void drawRoundVertices(const re::RoundVertex* vertices, uint32_t count);
 
-        re::Device* device_{ nullptr };
-        re::Swapchain* swapchain_{ nullptr };
-        re::RenderPass* renderPass_{ nullptr };
-        re::Pipeline* pipeline_{ nullptr };
-        re::Pipeline* roundPipeline_{ nullptr };
-        re::CommandContext* cmdContext_{ nullptr };
-        re::FrameContext* frameContext_{ nullptr };
+        re::Device*                 device_             { nullptr };
+        re::Swapchain*              swapchain_          { nullptr };
+        re::RenderPass*             renderPass_         { nullptr };
+        re::Pipeline*               pipeline_           { nullptr };
+        re::Pipeline*               roundPipeline_      { nullptr };
+        re::CommandContext*         cmdContext_         { nullptr };
+        re::FrameContext*           frameContext_       { nullptr };
 
-        re::Buffer vertexBuffer_;
-        re::Buffer roundVertexBuffer_;
-        static constexpr uint32_t MAX_VERTICES = 3000;
+        re::Buffer                  vertexBuffer_;
+        re::Buffer                  roundVertexBuffer_;
+        static constexpr uint32_t   MAX_VERTICES         = 3000;
 
-        re::Vertex vertexCpuBuffer_[MAX_VERTICES];
-        uint32_t vertexCount_{ 0 };
-        re::RoundVertex roundVertexCpuBuffer_[MAX_VERTICES];
-        uint32_t roundVertexCount_{ 0 };
+        re::Vertex                  vertexCpuBuffer_    [MAX_VERTICES];
+        uint32_t                    vertexCount_        { 0 };
+        re::RoundVertex             roundVertexCpuBuffer_[MAX_VERTICES];
+        uint32_t                    roundVertexCount_   { 0 };
 
-        uint32_t currentImageIndex_{ 0 };
-        VkCommandBuffer currentCmd_{ VK_NULL_HANDLE };
+        uint32_t                    currentImageIndex_  { 0 };
+        VkCommandBuffer             currentCmd_         { VK_NULL_HANDLE };
     };
 }
