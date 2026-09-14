@@ -4,7 +4,7 @@ using namespace re;
 
 //add logging
 
-void Buffer::create(Device* device, VkDeviceSize deviceSize, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+void Buffer::create(Device* device, VkDeviceSize deviceSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
     device_ = device;
     size_ = deviceSize;
 
@@ -14,23 +14,14 @@ void Buffer::create(Device* device, VkDeviceSize deviceSize, VkBufferUsageFlags 
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(device_->get(), &bufferInfo, nullptr, &buffer_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create buffer");
+    VmaAllocationCreateInfo allocInfo{};
+        allocInfo.usage = memoryUsage;
+        allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+
+
+    if (vmaCreateBuffer(device_->getAllocator(), &bufferInfo, &allocInfo, &buffer_, &allocation_, nullptr) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create vma buffer");
     }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device_->get(), buffer_, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(device_->get(), &allocInfo, nullptr, &memory_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate buffer memory");
-    }
-
-    vkBindBufferMemory(device_->get(), buffer_, memory_, 0);
 }
 
 void Buffer::copyFrom(Buffer* srcBuffer, CommandContext* cmdContext, VkDeviceSize size) {
@@ -44,39 +35,20 @@ void Buffer::copyFrom(Buffer* srcBuffer, CommandContext* cmdContext, VkDeviceSiz
 }
 
 void Buffer::map(void** dataOut) {
-    vkMapMemory(device_->get(), memory_, 0, size_, 0, dataOut);
+    vmaMapMemory(device_->getAllocator(), allocation_, dataOut);
 }
 
 void Buffer::unmap() {
-    vkUnmapMemory(device_->get(), memory_);
+    vmaUnmapMemory(device_->getAllocator(), allocation_);
 }
 
 VkBuffer Buffer::get() const {
     return buffer_;
 }
-VkDeviceMemory Buffer::getMemory() const {
-    return memory_;
-}
 
 Buffer::~Buffer() {
     if (buffer_ != VK_NULL_HANDLE) {
-        vkDestroyBuffer(device_->get(), buffer_, nullptr);
-    }
-    if (memory_ != VK_NULL_HANDLE) {
-        vkFreeMemory(device_->get(), memory_, nullptr);
+        vmaDestroyBuffer(device_->getAllocator(), buffer_, allocation_);
     }
 }
 
-uint32_t Buffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(device_->getPhysicalDevice(), &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) &&
-            (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-            return i;
-        }
-    }
-
-    throw std::runtime_error("failed to find suitable memory type");
-}

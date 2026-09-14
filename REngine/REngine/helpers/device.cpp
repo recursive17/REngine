@@ -140,7 +140,9 @@ VkQueue Device::getPresentQueue() const {
 }
 
 Device::~Device() {
-	
+	if (allocator_ != VK_NULL_HANDLE) {
+		vmaDestroyAllocator(allocator_);
+	}
 	if (device_ != VK_NULL_HANDLE) {
 		vkDestroyDevice(device_, nullptr);
 	}
@@ -150,6 +152,7 @@ Device::~Device() {
 	if (instance_ != VK_NULL_HANDLE) {
 		vkDestroyInstance(instance_, nullptr);
 	}
+
 }
 
 //bool Device::checkValidationSupport() {
@@ -166,4 +169,22 @@ std::vector<const char*> Device::getRequiredExtensions() {
 	}
 
 	return extensions;
+}
+
+
+void Device::createAllocator() {
+	VmaAllocatorCreateInfo allocatorInfo{};
+		allocatorInfo.physicalDevice = physicalDevice_;
+		allocatorInfo.device = device_;
+		allocatorInfo.instance = instance_;
+		allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+
+	if (vmaCreateAllocator(&allocatorInfo, &allocator_)!=VK_SUCCESS) {
+		throw std::runtime_error("failed to create allocator");
+	}
+
+}
+VmaAllocator Device::getAllocator()const {
+	return allocator_;
+
 }

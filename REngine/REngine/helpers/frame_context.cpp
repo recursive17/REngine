@@ -126,3 +126,7 @@ FrameContext::~FrameContext() {
         vkDestroyFence(device_->get(), fence, nullptr);
     }
 }
+
+VkFramebuffer FrameContext::getFramebuffer(uint32_t index) const {
+    return framebuffers_[index];
+}

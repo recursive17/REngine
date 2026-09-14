@@ -5,12 +5,26 @@
 #include<vector>
 #include<optional>
 #include<set>
+#include<vk_mem_alloc.h>
 namespace re {
 	struct Vertex {
 		float pos[2];
-		float color[3];
+		float color[4];
 	};
 
+	struct ReVec2 {
+		float x;
+		float y;
+	};
+	struct ReVec3 {
+		float x;
+		float y;
+		float z;
+	};
+	//color
+	struct ReColor {
+		float r, g, b, a;
+	};
 
 	void init(GLFWwindow* window);
 	void render();
@@ -23,6 +37,7 @@ namespace re {
 		void pickPhysicalDevice();
 		void findQueueFamilies();
 		void createLogicalDevice();
+		void createAllocator();
 
 
 		VkDevice get() const;
@@ -33,6 +48,9 @@ namespace re {
 		uint32_t getPresentQueueFamily() const;
 		VkQueue getGraphicsQueue()const;
 		VkQueue getPresentQueue()const;
+		VmaAllocator getAllocator()const;
+
+		
 		
 		~Device();
 	
@@ -49,6 +67,7 @@ namespace re {
 		std::optional<uint32_t> graphicsQueueFamilyIndex_	{ std::nullopt	 };
 		std::optional<uint32_t> presentQueueFamilyIndex_	{ std::nullopt   };
 		bool					enableValidation			{ true };
+		VmaAllocator			allocator_					{ VK_NULL_HANDLE };
 
 	};
 
@@ -100,21 +119,23 @@ namespace re {
 	class Pipeline {
 	public:
 
-		void create(Device* device, RenderPass* renderPass, Swapchain* swapchain);
+		//void create(Device* device, RenderPass* renderPass, Swapchain* swapchain);
+		void createSolid(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 
 		VkPipeline get() const;
 		VkPipelineLayout getLayout() const;
 
 		~Pipeline();
 	private:
+		void createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain, const std::string& vertPath, const std::string& fragPath);
 
 		VkShaderModule createShaderModule(const std::vector<char>& code);
 		std::vector<char> readFile(const std::string& path);
 
 	private:
-		VkPipelineLayout	pipelineLayout_{ VK_NULL_HANDLE };
-		VkPipeline			pipeline_{ VK_NULL_HANDLE };
-		Device*				device_;
+		VkPipelineLayout	pipelineLayout_		{ VK_NULL_HANDLE };
+		VkPipeline			pipeline_			{ VK_NULL_HANDLE };
+		Device*				device_				{ nullptr };
 
 	};
 
@@ -150,7 +171,7 @@ namespace re {
 		size_t getCurrentFrame() const;
 
 		std::vector<VkFramebuffer> createFramebuffer(Device* device, Swapchain* swapchain, RenderPass* renderPass);
-
+		VkFramebuffer getFramebuffer(uint32_t index) const;
 		~FrameContext();
 
 	private:
@@ -164,24 +185,21 @@ namespace re {
 
 	class Buffer {
 	public:
-		void create(Device* device, VkDeviceSize deviceSize, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+		void create(Device* device, VkDeviceSize deviceSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 		void copyFrom(Buffer* srcBuffer, CommandContext* cmdContext, VkDeviceSize size);
 		void map(void** dataOut);
 		void unmap();
 
 		VkBuffer get() const;
-		VkDeviceMemory getMemory() const;
 
 		~Buffer();
 
-	private:
-		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	private:
-		VkBuffer		 buffer_;
-		VkDeviceMemory	 memory_;
-		VkDeviceSize	 size_;
-		Device*			 device_;
+		VkBuffer		 buffer_		{ VK_NULL_HANDLE };
+		VmaAllocation	 allocation_	{ VK_NULL_HANDLE };
+		VkDeviceSize	 size_			{ 0 };
+		Device*			 device_		{ nullptr };
 
 	};
 

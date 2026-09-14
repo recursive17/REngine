@@ -12,15 +12,19 @@ add_executable(REngine
     "REngine/helpers/command_context.cpp"
     "REngine/helpers/frame_context.cpp"
     "REngine/helpers/pipeline.cpp"
-)
+ "REngine/helpers/vma_impl.cpp" "REnder/Renderer.cpp")
 
 target_include_directories(REngine PRIVATE
     ${Vulkan_INCLUDE_DIRS}
+)
+target_include_directories(REngine PRIVATE
+    ${CMAKE_SOURCE_DIR}/thirdparty/VMA/include
 )
 
 target_link_libraries(REngine PRIVATE
     Vulkan::Vulkan
 )
+
 
 if(WIN32)
     target_include_directories(REngine PRIVATE
