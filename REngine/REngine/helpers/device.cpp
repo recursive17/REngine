@@ -2,7 +2,7 @@
 using namespace re;
 
 
-void Device::createInstance(GLFWwindow* window) {
+void Device::createInstance(){
 
 	VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
