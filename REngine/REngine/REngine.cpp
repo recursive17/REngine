@@ -12,7 +12,7 @@ namespace {
 }
 
 void re::init(GLFWwindow* window) {
-    device.createInstance(window);
+    device.createInstance();
     device.createSurface(window);
     device.pickPhysicalDevice();
     device.findQueueFamilies();

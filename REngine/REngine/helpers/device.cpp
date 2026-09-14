@@ -2,7 +2,7 @@
 using namespace re;
 
 
-void Device::createInstance(GLFWwindow* window) {
+void Device::createInstance(){
 
 	VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -29,7 +29,7 @@ void Device::createInstance(GLFWwindow* window) {
 //TODO: ADD LOGGING
 		}
 		else {
-			instanceCreateInfo.enabledExtensionCount = 0;
+			instanceCreateInfo.enabledLayerCount = 0;
 		}
 		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance_);
 

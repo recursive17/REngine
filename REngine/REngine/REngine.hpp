@@ -18,7 +18,7 @@ namespace re {
 		
 	public:
 
-		void createInstance(GLFWwindow* window);
+		void createInstance();
 		void createSurface(GLFWwindow* window);
 		void pickPhysicalDevice();
 		void findQueueFamilies();
