@@ -6,6 +6,7 @@
 #include<optional>
 #include<set>
 #include<vk_mem_alloc.h>
+#include"utils/log.hpp"
 namespace re {
 	struct Vertex {
 		float pos[2];
@@ -42,6 +43,7 @@ namespace re {
 	
 	private:
 		std::vector<const char*> getRequiredExtensions();
+		int rateDevice(VkPhysicalDevice device);
 
 	private:
 		VkInstance				instance_					{ VK_NULL_HANDLE };

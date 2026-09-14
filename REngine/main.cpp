@@ -17,10 +17,6 @@ int main()
 		return -1;
 	}
 
-	re::ReLog::success(re::Prefix::VULKAN, "im faping");
-	re::ReLog::warning(re::Prefix::RENDER, "WARNINGNG!");
-	re::ReLog::error(re::Prefix::RE, "dura blyat", std::runtime_error("Simon sex"));
-
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		re::render();

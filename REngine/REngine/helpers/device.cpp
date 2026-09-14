@@ -47,16 +47,44 @@ void Device::pickPhysicalDevice() {
 	vkEnumeratePhysicalDevices(instance_, &pDeviceCount, nullptr);
 	std::vector<VkPhysicalDevice> devices(pDeviceCount);
 	vkEnumeratePhysicalDevices(instance_, &pDeviceCount, devices.data());
-	if (devices.size() > 0) {
-		physicalDevice_ = devices.data()[0];
+	auto bestDeviceIt = std::max_element(devices.begin(), devices.end(),
+		[this](VkPhysicalDevice a, VkPhysicalDevice b) {
+			return rateDevice(a) < rateDevice(b);
+		}
+	);
+
+	if (bestDeviceIt != devices.end() && rateDevice(*bestDeviceIt) > 0) {
+		physicalDevice_ = *bestDeviceIt;
+	}
+	else {
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to find a suitable GPU"));
 	}
 
-	//VkPhysicalDeviceProperties physicalDeviceProperties;
-	//vkGetPhysicalDeviceProperties(devices.data()[0], &physicalDeviceProperties);
-	//std::string gpuName(physicalDeviceProperties.deviceName, VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(physicalDevice_, &physicalDeviceProperties);
+		std::string gpuName(physicalDeviceProperties.deviceName, VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
+		re::ReLog::success(re::Prefix::VULKAN, "selected gpu: " + gpuName);
+
+	}
 
 //TODO: ADD LOGGING
 
+}
+int Device::rateDevice(VkPhysicalDevice device) {
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(device, &deviceProperties);
+	int score = 0;
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+		score += 1000;
+	}
+	else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+		score += 500;
+	}
+
+	score += deviceProperties.limits.maxImageDimension2D;
+	
+	return score;
 }
 void Device::findQueueFamilies() {
 	uint32_t queueFamilyCount = 0;
