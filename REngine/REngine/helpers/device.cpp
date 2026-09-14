@@ -47,8 +47,9 @@ void Device::pickPhysicalDevice() {
 	vkEnumeratePhysicalDevices(instance_, &pDeviceCount, nullptr);
 	std::vector<VkPhysicalDevice> devices(pDeviceCount);
 	vkEnumeratePhysicalDevices(instance_, &pDeviceCount, devices.data());
-
-	physicalDevice_ = devices.data()[0];
+	if (devices.size() > 0) {
+		physicalDevice_ = devices.data()[0];
+	}
 
 	//VkPhysicalDeviceProperties physicalDeviceProperties;
 	//vkGetPhysicalDeviceProperties(devices.data()[0], &physicalDeviceProperties);
