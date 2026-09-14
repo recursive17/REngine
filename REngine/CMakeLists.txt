@@ -2,8 +2,8 @@
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(REngine 
-    "REngine/REngine.cpp"
-    "REngine/REngine.hpp"
+    "REngine/rengine.cpp"
+    "REngine/rengine.hpp"
     "main.cpp"
     "REngine/helpers/device.cpp"
     "REngine/helpers/swapchain.cpp"

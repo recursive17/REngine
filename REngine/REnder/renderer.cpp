@@ -1,21 +1,24 @@
-#include"renderer.hpp"
+﻿#include"renderer.hpp"
 #include<cassert>
 using namespace render;
 
 void Renderer::init(re::Device* device, re::Swapchain* swapchain, re::RenderPass* renderPass,
-    re::Pipeline* pipeline, re::CommandContext* cmdContext, re::FrameContext* frameContext) {
+    re::Pipeline* pipeline, re::Pipeline* roundPipeline,
+    re::CommandContext* cmdContext, re::FrameContext* frameContext) {
     device_ = device;
     swapchain_ = swapchain;
     renderPass_ = renderPass;
     pipeline_ = pipeline;
+    roundPipeline_ = roundPipeline;
     cmdContext_ = cmdContext;
     frameContext_ = frameContext;
 
-    VkDeviceSize bufferSize = sizeof(re::Vertex) * MAX_VERTICES;
-
-    vertexBuffer_.create(device_, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
-
+    vertexBuffer_.create(device_, sizeof(re::Vertex) * MAX_VERTICES,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    roundVertexBuffer_.create(device_, sizeof(re::RoundVertex) * MAX_VERTICES,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
 }
+
 void Renderer::beginFrame() {
     frameContext_->beginFrame(swapchain_, &currentImageIndex_);
 
@@ -23,12 +26,13 @@ void Renderer::beginFrame() {
     vkResetCommandBuffer(currentCmd_, 0);
 
     VkCommandBufferBeginInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     vkBeginCommandBuffer(currentCmd_, &bufferInfo);
 
     vertexCount_ = 0;
+    roundVertexCount_ = 0;                                  // ← НОВОЕ
 
-    VkClearValue clearColor = { {{0.05f,0.05f,0.08f,1.0f}} };
+    VkClearValue clearColor = { {{0.05f, 0.05f, 0.08f, 1.0f}} };
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass_->get();
@@ -63,6 +67,7 @@ void Renderer::beginFrame() {
 }
 
 void Renderer::endFrame() {
+    VkDeviceSize offsets[] = { 0 };
 
     if (vertexCount_ > 0) {
         void* data;
@@ -70,39 +75,77 @@ void Renderer::endFrame() {
         memcpy(data, vertexCpuBuffer_, sizeof(re::Vertex) * vertexCount_);
         vertexBuffer_.unmap();
 
+        vkCmdBindPipeline(currentCmd_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_->get());
+        VkBuffer buffers[] = { vertexBuffer_.get() };
+        vkCmdBindVertexBuffers(currentCmd_, 0, 1, buffers, offsets);
+
         vkCmdDraw(currentCmd_, vertexCount_, 1, 0, 0);
     }
+
+    if (roundVertexCount_ > 0) {
+        void* data;
+        roundVertexBuffer_.map(&data);
+        memcpy(data, roundVertexCpuBuffer_, sizeof(re::RoundVertex) * roundVertexCount_);
+        roundVertexBuffer_.unmap();
+
+        vkCmdBindPipeline(currentCmd_, VK_PIPELINE_BIND_POINT_GRAPHICS, roundPipeline_->get());
+        VkBuffer buffers[] = { roundVertexBuffer_.get() };
+        vkCmdBindVertexBuffers(currentCmd_, 0, 1, buffers, offsets);
+
+        vkCmdDraw(currentCmd_, roundVertexCount_, 1, 0, 0);
+    }
+
     vkCmdEndRenderPass(currentCmd_);
     vkEndCommandBuffer(currentCmd_);
 
     frameContext_->endFrame(device_, swapchain_, currentImageIndex_, currentCmd_);
     frameContext_->advanceFrame();
 }
+
 void Renderer::drawVertices(const re::Vertex* vertices, uint32_t count) {
     assert(count <= MAX_VERTICES && "too many vertices for buffer");
-
     memcpy(&vertexCpuBuffer_[vertexCount_], vertices, sizeof(re::Vertex) * count);
-
     vertexCount_ += count;
+}
 
+void Renderer::drawRoundVertices(const re::RoundVertex* vertices, uint32_t count) {
+    assert(roundVertexCount_ + count <= MAX_VERTICES && "too many round vertices");
+    memcpy(&roundVertexCpuBuffer_[roundVertexCount_], vertices, sizeof(re::RoundVertex) * count);
+    roundVertexCount_ += count;
 }
 
 void Renderer::drawTriangle(re::ReVec2 pos, re::ReVec2 size, re::ReCol col) {
+    float r = col.getRedf(), g = col.getGreenf(), b = col.getBluef(), a = col.getAlphaf();
+
     re::Vertex vertices[3] = {
-        { { pos.x_,           pos.y_ - size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()}},
-        { { pos.x_ + size.x_, pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} },
-        { { pos.x_ - size.x_, pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} },
+        { { pos.x_,           pos.y_ - size.y_ }, {r,g,b,a}},
+        { { pos.x_ + size.x_, pos.y_ + size.y_ }, {r,g,b,a} },
+        { { pos.x_ - size.x_, pos.y_ + size.y_ }, {r,g,b,a} },
     };
     drawVertices(vertices, 3);
 }
 
 void Renderer::drawQuad(re::ReVec2 pos, re::ReVec2 size, re::ReCol col) {
-    re::Vertex v1{ { pos.x_,           pos.y_ },           {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
-    re::Vertex v2{ { pos.x_ + size.x_, pos.y_ },           {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
-    re::Vertex v3{ { pos.x_ + size.x_, pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
-    re::Vertex v4{ { pos.x_,           pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
+    float r = col.getRedf(), g = col.getGreenf(), b = col.getBluef(), a = col.getAlphaf();
+
+    re::Vertex v1{ { pos.x_,           pos.y_ },           {r,g,b,a} };
+    re::Vertex v2{ { pos.x_ + size.x_, pos.y_ },           {r,g,b,a} };
+    re::Vertex v3{ { pos.x_ + size.x_, pos.y_ + size.y_ }, {r,g,b,a} };
+    re::Vertex v4{ { pos.x_,           pos.y_ + size.y_ }, {r,g,b,a} };
 
     re::Vertex vertices[6] = { v1, v2, v3, v1, v3, v4 };
     drawVertices(vertices, 6);
+}
+
+void Renderer::drawRoundQuad(re::ReVec2 pos, re::ReVec2 size, float radius, re::ReCol col) {
+    float r = col.getRedf(), g = col.getGreenf(), b = col.getBluef(), a = col.getAlphaf();
+
+    re::RoundVertex v1{ { pos.x_,           pos.y_           }, { r, g, b, a }, { 0.0f, 0.0f }, { size.x_, size.y_ }, radius };
+    re::RoundVertex v2{ { pos.x_ + size.x_, pos.y_           }, { r, g, b, a }, { 1.0f, 0.0f }, { size.x_, size.y_ }, radius };
+    re::RoundVertex v3{ { pos.x_ + size.x_, pos.y_ + size.y_ }, { r, g, b, a }, { 1.0f, 1.0f }, { size.x_, size.y_ }, radius };
+    re::RoundVertex v4{ { pos.x_,           pos.y_ + size.y_ }, { r, g, b, a }, { 0.0f, 1.0f }, { size.x_, size.y_ }, radius };
+
+    re::RoundVertex vertices[6] = { v1, v2, v3, v1, v3, v4 };
+    drawRoundVertices(vertices, 6);
 }
 

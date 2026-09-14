@@ -6,6 +6,7 @@ namespace {
     re::Swapchain swapchain;
     re::RenderPass renderPass;
     re::Pipeline pipeline;
+    re::Pipeline roundPipeline;
     re::CommandContext cmdContext;
     re::FrameContext frameContext;
     render::Renderer renderer;
@@ -25,8 +26,8 @@ void re::init(GLFWwindow* window) {
     renderPass.create(&device, &swapchain);
 
     //shaders
-        pipeline.createSolid(&device, &renderPass, &swapchain);
-
+    pipeline.createSolid(&device, &renderPass, &swapchain);
+    roundPipeline.createRound(&device, &renderPass, &swapchain);
     //
 
     cmdContext.createCommandPool(&device);
@@ -34,7 +35,7 @@ void re::init(GLFWwindow* window) {
 
     frameContext.createSyncObjects(&device, swapchain.getImageCount());
     frameContext.createFramebuffer(&device, &swapchain, &renderPass);
-    renderer.init(&device, &swapchain, &renderPass, &pipeline, &cmdContext, &frameContext);
+    renderer.init(&device, &swapchain, &renderPass, &pipeline, &roundPipeline, &cmdContext, &frameContext);
     
     
 }
@@ -43,5 +44,6 @@ void re::render() {
     renderer.beginFrame();
     renderer.drawTriangle({ 0.0f, 0.0f }, { 0.3f, 0.3f }, { 135, 255, 13, 255 });
     renderer.drawQuad({ -0.5f, -0.5f }, { 0.3f, 0.2f }, { 12, 25, 255, 255 });
+    renderer.drawRoundQuad({ 0.5, 0.5 }, { 0.4f, 0.4f }, 1, { 192, 21, 11, 255 });
     renderer.endFrame();
 }

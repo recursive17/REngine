@@ -5,12 +5,45 @@ using namespace re;
 //TODO: ADD LOGGING
 
 void Pipeline::createSolid(Device* device, RenderPass* renderPass, Swapchain* swapchain) {
-    createInternal(device, renderPass, swapchain,"shaders/solid_vert.spv","shaders/solid_frag.spv");
+    VkVertexInputBindingDescription binding{};
+    binding.binding = 0;
+    binding.stride = sizeof(Vertex);
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    std::vector<VkVertexInputAttributeDescription> attrs = {
+        { 0, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(Vertex, pos)   },
+        { 1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color) },
+    };
+
+    createInternal(device, renderPass, swapchain,
+        "shaders/solid_vert.spv", "shaders/solid_frag.spv", binding, attrs);
 }
 
+void Pipeline::createRound(Device* device, RenderPass* renderPass, Swapchain* swapchain) {
+    VkVertexInputBindingDescription binding{};
+    binding.binding = 0;
+    binding.stride = sizeof(RoundVertex);
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain, const std::string& vertPath, const std::string& fragPath) {
+    std::vector<VkVertexInputAttributeDescription> attrs = {
+        { 0, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(RoundVertex, pos)    },
+        { 1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(RoundVertex, color)  },
+        { 2, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(RoundVertex, uv)     },
+        { 3, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(RoundVertex, size)   },
+        { 4, 0, VK_FORMAT_R32_SFLOAT,          offsetof(RoundVertex, radius) },
+    };
+
+    createInternal(device, renderPass, swapchain,
+        "shaders/round_solid_vert.spv", "shaders/round_solid_frag.spv", binding, attrs);
+}
+
+void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain,
+    const std::string& vertPath, const std::string& fragPath,
+    const VkVertexInputBindingDescription& binding,
+    const std::vector<VkVertexInputAttributeDescription>& attributes) {
+
     device_ = device;
+
     std::vector<char> vertShaderCode = readFile(vertPath);
     std::vector<char> fragShaderCode = readFile(fragPath);
 
@@ -31,28 +64,12 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertStage, fragStage };
 
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    VkVertexInputAttributeDescription attributeDescriptions[2]{};
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Vertex, color);
-
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.vertexAttributeDescriptionCount = 2;
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
+    vertexInputInfo.pVertexBindingDescriptions = &binding;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributes.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -68,9 +85,9 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE;
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;   
     rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = VK_CULL_MODE_NONE;
+    rasterizer.cullMode = VK_CULL_MODE_NONE;      
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -123,7 +140,7 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = pipelineLayout_;
-    pipelineInfo.renderPass = renderPass->get();
+    pipelineInfo.renderPass = renderPass->get(); 
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
@@ -133,7 +150,6 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
 
     vkDestroyShaderModule(device_->get(), fragShaderModule, nullptr);
     vkDestroyShaderModule(device_->get(), vertShaderModule, nullptr);
-
 }
 
 

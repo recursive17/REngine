@@ -12,6 +12,14 @@ namespace re {
 		float color[4];
 	};
 
+	struct RoundVertex {
+		float pos[2];
+		float color[4];
+		float uv[2];
+		float size[2];
+		float radius;
+	};
+
 	void init(GLFWwindow* window);
 	void render();
 	class Device {
@@ -107,14 +115,17 @@ namespace re {
 
 		//void create(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 		void createSolid(Device* device, RenderPass* renderPass, Swapchain* swapchain);
+		void createRound(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 
 		VkPipeline get() const;
 		VkPipelineLayout getLayout() const;
 
 		~Pipeline();
 	private:
-		void createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain, const std::string& vertPath, const std::string& fragPath);
-
+		void createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain,
+			const std::string& vertPath, const std::string& fragPath,
+			const VkVertexInputBindingDescription& binding,
+			const std::vector<VkVertexInputAttributeDescription>& attributes);
 		VkShaderModule createShaderModule(const std::vector<char>& code);
 		std::vector<char> readFile(const std::string& path);
 
