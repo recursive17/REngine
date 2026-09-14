@@ -44,7 +44,7 @@ void re::render() {
     renderer.beginFrame();
     renderer.drawTriangle({ 0.0f, 0.0f }, { 0.3f, 0.3f }, { 135, 255, 13, 255 });
     renderer.drawQuad({ -0.5f, -0.5f }, { 0.3f, 0.2f }, { 12, 25, 255, 255 });
-    renderer.drawRoundQuad({ 0.2f, 0.2f }, { 0.4f, 0.4f }, 0.05f, { 12, 25, 255, 255 }); 
+    renderer.drawRoundQuad({ 0.2f, 0.2f }, { 0.4f, 0.4f }, 0.05f, { 12, 25, 255, 90 }); 
     renderer.drawRoundQuad({ 0.5f, -0.4f }, { 0.4f, 0.4f }, 0.1f, { 12, 25, 255, 255 });
     renderer.endFrame();
 }

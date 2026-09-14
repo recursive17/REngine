@@ -30,7 +30,7 @@ void Renderer::beginFrame() {
     vkBeginCommandBuffer(currentCmd_, &bufferInfo);
 
     vertexCount_ = 0;
-    roundVertexCount_ = 0;                                  // ← НОВОЕ
+    roundVertexCount_ = 0;                                  
 
     VkClearValue clearColor = { {{0.05f, 0.05f, 0.08f, 1.0f}} };
     VkRenderPassBeginInfo renderPassInfo{};
