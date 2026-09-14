@@ -12,20 +12,6 @@ namespace re {
 		float color[4];
 	};
 
-	struct ReVec2 {
-		float x;
-		float y;
-	};
-	struct ReVec3 {
-		float x;
-		float y;
-		float z;
-	};
-	//color
-	struct ReColor {
-		float r, g, b, a;
-	};
-
 	void init(GLFWwindow* window);
 	void render();
 	class Device {
@@ -66,7 +52,7 @@ namespace re {
 		VkQueue					graphicsQueue_				{ VK_NULL_HANDLE };
 		std::optional<uint32_t> graphicsQueueFamilyIndex_	{ std::nullopt	 };
 		std::optional<uint32_t> presentQueueFamilyIndex_	{ std::nullopt   };
-		bool					enableValidation			{ true };
+		bool					enableValidation			{ false }; // FALSE 
 		VmaAllocator			allocator_					{ VK_NULL_HANDLE };
 
 	};

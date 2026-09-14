@@ -87,21 +87,22 @@ void Renderer::drawVertices(const re::Vertex* vertices, uint32_t count) {
 
 }
 
-void Renderer::drawTriangle(re::ReVec2 pos, re::ReVec2 size, re::ReColor col) {
+void Renderer::drawTriangle(re::ReVec2 pos, re::ReVec2 size, re::ReCol col) {
     re::Vertex vertices[3] = {
-        { { pos.x,          pos.y - size.y }, {col.r,col.g,col.b,col.a} },
-        { { pos.x + size.x, pos.y + size.y },  {col.r,col.g,col.b,col.a} },
-        { { pos.x - size.x, pos.y + size.y },  {col.r,col.g,col.b,col.a} },
+        { { pos.x_,           pos.y_ - size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()}},
+        { { pos.x_ + size.x_, pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} },
+        { { pos.x_ - size.x_, pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} },
     };
     drawVertices(vertices, 3);
 }
 
-void Renderer::drawQuad(re::ReVec2 pos, re::ReVec2 size, re::ReColor col) {
-    re::Vertex v1{ { pos.x,          pos.y },           {col.r,col.g,col.b,col.a} };
-    re::Vertex v2{ { pos.x + size.x,   pos.y },           {col.r,col.g,col.b,col.a} };
-    re::Vertex v3{ { pos.x + size.x,   pos.y + size.y },    {col.r,col.g,col.b,col.a} };
-    re::Vertex v4{ { pos.x,          pos.y + size.y },    {col.r,col.g,col.b,col.a} };
+void Renderer::drawQuad(re::ReVec2 pos, re::ReVec2 size, re::ReCol col) {
+    re::Vertex v1{ { pos.x_,           pos.y_ },           {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
+    re::Vertex v2{ { pos.x_ + size.x_, pos.y_ },           {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
+    re::Vertex v3{ { pos.x_ + size.x_, pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
+    re::Vertex v4{ { pos.x_,           pos.y_ + size.y_ }, {col.getRedf(),col.getBluef(),col.getGreenf(),col.getAlphaf()} };
 
-    re::Vertex vertices[6] = { v1, v2, v3,  v1, v3, v4 };
+    re::Vertex vertices[6] = { v1, v2, v3, v1, v3, v4 };
     drawVertices(vertices, 6);
 }
+
