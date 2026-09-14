@@ -27,20 +27,31 @@ void Device::createInstance(){
 			instanceCreateInfo.enabledLayerCount = 1;
 			instanceCreateInfo.ppEnabledLayerNames = validationLayers;
 //TODO: ADD LOGGING
+			re::ReLog::warning(re::Prefix::VULKAN, "validation layers is enabled");
+
 		}
 		else {
+
+			re::ReLog::warning(re::Prefix::VULKAN, "validation layers is disabled");
 			instanceCreateInfo.enabledLayerCount = 0;
 		}
 		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance_);
+		if (result != VK_SUCCESS) {
+			re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create instance"));
+		}
 
-//TODO:PRINT RESULT LOGGING
+		re::ReLog::success(re::Prefix::VULKAN, "instance created");
 
 
 
 }
 void Device::createSurface(GLFWwindow* window) {
 	VkResult result = glfwCreateWindowSurface(instance_, window, nullptr, &surface_);
-//TODO:ADD LOGGING
+	if (result != VK_SUCCESS) {
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create surface"));
+	}
+	re::ReLog::success(re::Prefix::VULKAN, "surface created");
+
 }
 void Device::pickPhysicalDevice() {
 	uint32_t pDeviceCount = 0;
@@ -68,7 +79,6 @@ void Device::pickPhysicalDevice() {
 
 	}
 
-//TODO: ADD LOGGING
 
 }
 int Device::rateDevice(VkPhysicalDevice device) {
@@ -136,7 +146,12 @@ void Device::createLogicalDevice() {
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 
 	VkResult result = vkCreateDevice(physicalDevice_, &deviceCreateInfo, nullptr, &device_);
-//TODO: ADD CHECK RESULT
+
+	if (result != VK_SUCCESS) {
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create logical device GPU"));
+	}
+	re::ReLog::success(re::Prefix::VULKAN, "logical device created!");
+
 
 	vkGetDeviceQueue(device_, graphicsQueueFamilyIndex_.value(), 0, &graphicsQueue_);
 	vkGetDeviceQueue(device_, presentQueueFamilyIndex_.value(), 0, &presentQueue_);
@@ -209,8 +224,9 @@ void Device::createAllocator() {
 		allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 
 	if (vmaCreateAllocator(&allocatorInfo, &allocator_)!=VK_SUCCESS) {
-		throw std::runtime_error("failed to create allocator");
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create vma allocator"));
 	}
+	re::ReLog::success(re::Prefix::VULKAN, "vma allocator created");
 
 }
 VmaAllocator Device::getAllocator()const {

@@ -26,16 +26,16 @@ namespace re {
 		}
 	public:
 		static void error(Prefix pr, std::exception ex) {
-			std::cerr << RED << "[" << prefixToString(pr) << "]" << "Exception-> " << ex.what() << std::endl;
+			std::cerr << RED << "[" << prefixToString(pr) << "][Exception] " << ex.what() << std::endl;
 			throw ex;
 		}
 
 		static void warning(Prefix pr, std::string message) {
-			std::cerr << YELLOW << "[" << prefixToString(pr) << "] Warning-> " << message << std::endl;
+			std::cerr << YELLOW << "[" << prefixToString(pr) << "][Warning] " << message << std::endl;
 		}
 
 		static void success(Prefix pr, std::string message) {
-			std::cerr << GREEN << "[" << prefixToString(pr) << "] Success-> " << message << std::endl;
+			std::cerr << GREEN << "[" << prefixToString(pr) << "][Success] " << message << std::endl;
 		}
 	};
 

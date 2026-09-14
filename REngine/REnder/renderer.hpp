@@ -18,20 +18,20 @@ namespace render {
     private:
         void drawVertices(const re::Vertex* vertices, uint32_t count);
 
-        re::Device* device_{ nullptr };
-        re::Swapchain* swapchain_{ nullptr };
-        re::RenderPass* renderPass_{ nullptr };
-        re::Pipeline* pipeline_{ nullptr };
-        re::CommandContext* cmdContext_{ nullptr };
-        re::FrameContext* frameContext_{ nullptr };
+        re::Device*                 device_             { nullptr };
+        re::Swapchain*              swapchain_          { nullptr };
+        re::RenderPass*             renderPass_         { nullptr };
+        re::Pipeline*               pipeline_           { nullptr };
+        re::CommandContext*         cmdContext_         { nullptr };
+        re::FrameContext*           frameContext_       { nullptr };
 
-        re::Buffer vertexBuffer_;
-        static constexpr uint32_t MAX_VERTICES = 3000;
+        re::Buffer                  vertexBuffer_;
+        static constexpr uint32_t   MAX_VERTICES         = 3000;
 
-        re::Vertex vertexCpuBuffer_[MAX_VERTICES];
-        uint32_t vertexCount_{ 0 };
+        re::Vertex                  vertexCpuBuffer_    [MAX_VERTICES];
+        uint32_t                    vertexCount_        { 0 };
 
-        uint32_t currentImageIndex_{ 0 };
-        VkCommandBuffer currentCmd_{ VK_NULL_HANDLE };
+        uint32_t                    currentImageIndex_  { 0 };
+        VkCommandBuffer             currentCmd_         { VK_NULL_HANDLE };
     };
 }
