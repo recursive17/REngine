@@ -29,7 +29,7 @@ void Device::createInstance(){
 //TODO: ADD LOGGING
 		}
 		else {
-			instanceCreateInfo.enabledExtensionCount = 0;
+			instanceCreateInfo.enabledLayerCount = 0;
 		}
 		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance_);
 
