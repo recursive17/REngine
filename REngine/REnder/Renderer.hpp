@@ -1,5 +1,7 @@
 #pragma once
 #include "../REngine/REngine.hpp"
+#include "../REngine/utils/revec.hpp"
+#include "../REngine/utils/recol.hpp"
 
 namespace render {
     class Renderer {
@@ -10,8 +12,8 @@ namespace render {
         void beginFrame();
         void endFrame();
 
-        void drawTriangle(re::ReVec2 pos, re::ReVec2 size, re::ReColor col);
-        void drawQuad(re::ReVec2 pos, re::ReVec2 size, re::ReColor col);
+        void drawTriangle(re::ReVec2 pos, re::ReVec2 size, re::ReCol col);
+        void drawQuad(re::ReVec2 pos, re::ReVec2 size, re::ReCol col);
 
     private:
         void drawVertices(const re::Vertex* vertices, uint32_t count);
