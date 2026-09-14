@@ -54,7 +54,7 @@ namespace re {
 		VkQueue					graphicsQueue_				{ VK_NULL_HANDLE };
 		std::optional<uint32_t> graphicsQueueFamilyIndex_	{ std::nullopt	 };
 		std::optional<uint32_t> presentQueueFamilyIndex_	{ std::nullopt   };
-		bool					enableValidation			{ false }; // FALSE 
+		bool					enableValidation			{ true }; // FALSE 
 		VmaAllocator			allocator_					{ VK_NULL_HANDLE };
 
 	};

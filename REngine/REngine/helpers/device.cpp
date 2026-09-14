@@ -12,7 +12,6 @@ void Device::createInstance(){
 		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		appInfo.apiVersion = VK_API_VERSION_1_3;
 
-//TODO:ADD LOGGING
 
 		auto ext = getRequiredExtensions();
 
@@ -26,7 +25,6 @@ void Device::createInstance(){
 			const char* validationLayers[] = { "VK_LAYER_KHRONOS_validation" };
 			instanceCreateInfo.enabledLayerCount = 1;
 			instanceCreateInfo.ppEnabledLayerNames = validationLayers;
-//TODO: ADD LOGGING
 			re::ReLog::warning(re::Prefix::VULKAN, "validation layers is enabled");
 
 		}
@@ -199,9 +197,6 @@ Device::~Device() {
 
 }
 
-//bool Device::checkValidationSupport() {
-//
-//}
 std::vector<const char*> Device::getRequiredExtensions() {
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
