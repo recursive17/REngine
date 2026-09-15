@@ -20,7 +20,7 @@ void Buffer::create(Device* device, VkDeviceSize deviceSize, VkBufferUsageFlags 
 
 
     if (vmaCreateBuffer(device_->getAllocator(), &bufferInfo, &allocInfo, &buffer_, &allocation_, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create vma buffer");
+        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to crate vma buffer"));
     }
 }
 

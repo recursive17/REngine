@@ -13,28 +13,41 @@ namespace {
 }
 
 void re::init(GLFWwindow* window) {
+
     device.createInstance();
     device.createSurface(window);
     device.pickPhysicalDevice();
     device.findQueueFamilies();
     device.createLogicalDevice();
     device.createAllocator();
+        re::ReLog::success(re::Prefix::VULKAN, "class device is created!");
 
     swapchain.create(&device, window);
     swapchain.createImageViews();
+        re::ReLog::success(re::Prefix::VULKAN, "class swapchain is created!");
 
     renderPass.create(&device, &swapchain);
+        re::ReLog::success(re::Prefix::VULKAN, "class renderPass is created!");
 
     //shaders
+
     pipeline.createSolid(&device, &renderPass, &swapchain);
+        re::ReLog::success(re::Prefix::VULKAN, "solid pipeline is created");
+
     roundPipeline.createRound(&device, &renderPass, &swapchain);
+        re::ReLog::success(re::Prefix::VULKAN, "round pipeline is created");
+
     //
 
     cmdContext.createCommandPool(&device);
     cmdContext.createCommandBuffer(swapchain.getImageCount());
+        re::ReLog::success(re::Prefix::VULKAN, "class commandContext is created!");
+
 
     frameContext.createSyncObjects(&device, swapchain.getImageCount());
     frameContext.createFramebuffer(&device, &swapchain, &renderPass);
+        re::ReLog::success(re::Prefix::VULKAN, "class framebuffer is created!");
+
     renderer.init(&device, &swapchain, &renderPass, &pipeline, &roundPipeline, &cmdContext, &frameContext);
     
     

@@ -38,17 +38,12 @@ void Device::createInstance(){
 			re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create instance"));
 		}
 
-		re::ReLog::success(re::Prefix::VULKAN, "instance created");
-
-
-
 }
 void Device::createSurface(GLFWwindow* window) {
 	VkResult result = glfwCreateWindowSurface(instance_, window, nullptr, &surface_);
 	if (result != VK_SUCCESS) {
 		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create surface"));
 	}
-	re::ReLog::success(re::Prefix::VULKAN, "surface created");
 
 }
 void Device::pickPhysicalDevice() {
@@ -73,7 +68,7 @@ void Device::pickPhysicalDevice() {
 		VkPhysicalDeviceProperties physicalDeviceProperties;
 		vkGetPhysicalDeviceProperties(physicalDevice_, &physicalDeviceProperties);
 		std::string gpuName(physicalDeviceProperties.deviceName, VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
-		re::ReLog::success(re::Prefix::VULKAN, "selected gpu: " + gpuName);
+		re::ReLog::warning(re::Prefix::VULKAN, "selected gpu: " + gpuName);
 
 	}
 
@@ -119,13 +114,16 @@ void Device::findQueueFamilies() {
 void Device::createLogicalDevice() {
 	VkPhysicalDeviceFeatures deviceFeatures = {};
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	
+	if (!graphicsQueueFamilyIndex_.has_value() || !presentQueueFamilyIndex_.has_value()) {
+		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to find suitable queue families (not has_value())"));
 
+	}
 	std::set<uint32_t> uniqueQueueFamilies= {graphicsQueueFamilyIndex_.value(), presentQueueFamilyIndex_.value()};
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	float queuePriority = 1.0f;
 
-	for (const auto queueFamily : uniqueQueueFamilies)
-	{
+	for (const auto queueFamily : uniqueQueueFamilies){
 		VkDeviceQueueCreateInfo queueCreateInfo = {};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueCount = 1;
@@ -148,7 +146,6 @@ void Device::createLogicalDevice() {
 	if (result != VK_SUCCESS) {
 		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create logical device GPU"));
 	}
-	re::ReLog::success(re::Prefix::VULKAN, "logical device created!");
 
 
 	vkGetDeviceQueue(device_, graphicsQueueFamilyIndex_.value(), 0, &graphicsQueue_);
@@ -221,7 +218,6 @@ void Device::createAllocator() {
 	if (vmaCreateAllocator(&allocatorInfo, &allocator_)!=VK_SUCCESS) {
 		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create vma allocator"));
 	}
-	re::ReLog::success(re::Prefix::VULKAN, "vma allocator created");
 
 }
 VmaAllocator Device::getAllocator()const {

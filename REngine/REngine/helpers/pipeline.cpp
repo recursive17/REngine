@@ -2,7 +2,6 @@
 #include<fstream>
 using namespace re;
 
-//TODO: ADD LOGGING
 
 void Pipeline::createSolid(Device* device, RenderPass* renderPass, Swapchain* swapchain) {
     VkVertexInputBindingDescription binding{};
@@ -125,7 +124,7 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if (vkCreatePipelineLayout(device_->get(), &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create pipeline layout");
+        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create pipeline layout"));
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -145,7 +144,7 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     if (vkCreateGraphicsPipelines(device_->get(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create graphics pipeline");
+        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create graphics pipeline"));
     }
 
     vkDestroyShaderModule(device_->get(), fragShaderModule, nullptr);
@@ -183,7 +182,7 @@ std::vector<char> Pipeline::readFile(const std::string& path) {
     std::ifstream file(path, std::ios::ate | std::ios::binary);
     if (!file.is_open())
     {
-        throw std::runtime_error("failed to open file" + path);
+        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to open file" + path));
     }
     size_t fileSize = static_cast<size_t>(file.tellg());
     std::vector<char> buffer(fileSize);
