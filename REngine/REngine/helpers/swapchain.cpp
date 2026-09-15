@@ -25,7 +25,7 @@ void Swapchain::create(Device* device, GLFWwindow* window) {
 	VkExtent2D extent = chooseExtent(capabilities, window);
 
 	uint32_t imageCount=capabilities.minImageCount+1;
-	if (capabilities.minImageCount > 0 && imageCount > capabilities.maxImageCount) {
+	if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount) {
 		imageCount = capabilities.maxImageCount;
 	}
 
