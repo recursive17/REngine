@@ -117,10 +117,16 @@ void Renderer::drawRoundVertices(const re::RoundVertex* vertices, uint32_t count
 void Renderer::drawTriangle(re::ReVec2 pos, re::ReVec2 size, re::ReCol col) {
     float r = col.getRedf(), g = col.getGreenf(), b = col.getBluef(), a = col.getAlphaf();
 
+
+    //HERE IS METHOD, YOU NEED TO READ THIS METHOD
+    re::ReVec2 p1 = pixelToNDC({ pos.x_,               pos.y_ });
+    re::ReVec2 p2 = pixelToNDC({ pos.x_ + size.x_ / 2, pos.y_ + size.y_ });
+    re::ReVec2 p3 = pixelToNDC({ pos.x_ - size.x_ / 2, pos.y_ + size.y_ });
+
     re::Vertex vertices[3] = {
-        { { pos.x_,           pos.y_ - size.y_ }, {r,g,b,a}},
-        { { pos.x_ + size.x_, pos.y_ + size.y_ }, {r,g,b,a} },
-        { { pos.x_ - size.x_, pos.y_ + size.y_ }, {r,g,b,a} },
+        { { p1.x_, p1.y_ }, { r, g, b, a } },
+        { { p3.x_, p3.y_ }, { r, g, b, a } }, 
+        { { p2.x_, p2.y_ }, { r, g, b, a } },
     };
     drawVertices(vertices, 3);
 }
@@ -147,5 +153,18 @@ void Renderer::drawRoundQuad(re::ReVec2 pos, re::ReVec2 size, float radius, re::
 
     re::RoundVertex vertices[6] = { v1, v2, v3, v1, v3, v4 };
     drawRoundVertices(vertices, 6);
+}
+
+
+// --- UTILS ---
+//HERE
+re::ReVec2 Renderer::pixelToNDC(const re::ReVec2 pixelPos) const {
+    VkExtent2D extent = swapchain_->getExtent();
+    float w = static_cast<float>(extent.width);
+    float h = static_cast<float>(extent.height);
+    return {
+        (2.0f * pixelPos.x_ / w) - 1.0f,
+        (2.0f * pixelPos.y_ / h) - 1.0f 
+    };
 }
 

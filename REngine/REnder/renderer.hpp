@@ -19,6 +19,7 @@ namespace render {
     private:
         void drawVertices(const re::Vertex* vertices, uint32_t count);
         void drawRoundVertices(const re::RoundVertex* vertices, uint32_t count);
+        re::ReVec2 pixelToNDC(const re::ReVec2 pixelPos) const;
 
         re::Device*                 device_             { nullptr };
         re::Swapchain*              swapchain_          { nullptr };
