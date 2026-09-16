@@ -39,6 +39,8 @@ void re::init(GLFWwindow* window) {
     roundPipeline.createRound(&device, &renderPass, &swapchain);
         re::ReLog::success(re::Prefix::VULKAN, "round pipeline is created");
     
+    triRoundPipeline.createRoundTri(&device, &renderPass, &swapchain);
+        re::ReLog::success(re::Prefix::VULKAN, "tri round pipeline is created");
 
     cmdContext.createCommandPool(&device);
     cmdContext.createCommandBuffer(swapchain.getImageCount());
