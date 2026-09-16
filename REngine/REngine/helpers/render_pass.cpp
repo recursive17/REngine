@@ -44,7 +44,7 @@ void RenderPass::create(Device* device, Swapchain* swapchain) {
 
     if (vkCreateRenderPass(device_->get(), &renderPassInfo, nullptr, &renderPass_) != VK_SUCCESS)
     {
-        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create render pass"));
+        re::ReLog::error(re::Prefix::VULKAN, "failed to create render pass");
     }
     
 }

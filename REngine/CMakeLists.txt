@@ -45,7 +45,7 @@ endif()
 find_program(GLSLC glslc HINTS "$ENV{VULKAN_SDK}/Bin")
 message(STATUS "GLSLC = ${GLSLC}")
 
-file(GLOB SHADER_SOURCES
+file(GLOB_RECURSE SHADER_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/src/shaders/*.vert"
     "${CMAKE_SOURCE_DIR}/src/shaders/*.frag"
 )
@@ -56,14 +56,22 @@ file(MAKE_DIRECTORY ${SPIRV_BINARY_DIR})
 set(SPIRV_BINARY_FILES "")
 
 foreach(SHADER ${SHADER_SOURCES})
+    file(RELATIVE_PATH SHADER_REL "${CMAKE_SOURCE_DIR}/src/shaders" ${SHADER})
+    get_filename_component(SHADER_DIR ${SHADER_REL} DIRECTORY)
     get_filename_component(SHADER_NAME_WE ${SHADER} NAME_WE)
-    set(SPIRV_OUTPUT "${SPIRV_BINARY_DIR}/${SHADER_NAME_WE}.spv")
+
+    if(SHADER_DIR STREQUAL "")
+        set(SPIRV_OUTPUT "${SPIRV_BINARY_DIR}/${SHADER_NAME_WE}.spv")
+    else()
+        set(SPIRV_OUTPUT "${SPIRV_BINARY_DIR}/${SHADER_DIR}/${SHADER_NAME_WE}.spv")
+        file(MAKE_DIRECTORY "${SPIRV_BINARY_DIR}/${SHADER_DIR}")
+    endif()
 
     add_custom_command(
         OUTPUT ${SPIRV_OUTPUT}
         COMMAND ${GLSLC} ${SHADER} -o ${SPIRV_OUTPUT}
         DEPENDS ${SHADER}
-        COMMENT "Compiling shader ${SHADER_NAME_WE}"
+        COMMENT "Compiling shader ${SHADER_REL}"
     )
 
     list(APPEND SPIRV_BINARY_FILES ${SPIRV_OUTPUT})

@@ -21,6 +21,15 @@ namespace re {
 		float radius;
 	};
 
+	struct TriVertex {
+		float pos[2];
+		float color[4];
+		float p0[2];
+		float p1[2];
+		float p2[2];
+		float radius;
+	};
+
 	void init(GLFWwindow* window);
 	void render();
 	class Device {
@@ -33,7 +42,7 @@ namespace re {
 		void findQueueFamilies();
 		void createLogicalDevice();
 		void createAllocator();
-
+		void createDebugMessenger();
 
 		VkDevice get() const;
 		VkPhysicalDevice getPhysicalDevice() const;
@@ -52,6 +61,7 @@ namespace re {
 	private:
 		std::vector<const char*> getRequiredExtensions();
 		int rateDevice(VkPhysicalDevice device);
+		VkDebugUtilsMessengerEXT debugMessenger_{ VK_NULL_HANDLE };
 
 	private:
 		VkInstance				instance_					{ VK_NULL_HANDLE };
@@ -118,6 +128,7 @@ namespace re {
 		//void create(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 		void createSolid(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 		void createRound(Device* device, RenderPass* renderPass, Swapchain* swapchain);
+		void createRoundTri(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 
 		VkPipeline get() const;
 		VkPipelineLayout getLayout() const;

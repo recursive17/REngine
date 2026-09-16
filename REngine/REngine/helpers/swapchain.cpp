@@ -61,7 +61,7 @@ void Swapchain::create(Device* device, GLFWwindow* window) {
 
 	VkResult result = vkCreateSwapchainKHR(device->get(), &createInfo, nullptr, &swapchain_);
 	if (result != VK_SUCCESS) {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create swapchain"));
+		re::ReLog::error(re::Prefix::VULKAN, "failed to create swapchain");
 	}
 
 
@@ -94,7 +94,7 @@ void Swapchain::createImageViews() {
 
 		VkResult result = vkCreateImageView(device_->get(), &viewInfo, nullptr, &imageViews_[i]);
 		if (result != VK_SUCCESS) {
-			re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create image view"));
+			re::ReLog::error(re::Prefix::VULKAN, "failed to create image view");
 		}
 	}
 }

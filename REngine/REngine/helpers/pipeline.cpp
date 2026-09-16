@@ -15,7 +15,7 @@ void Pipeline::createSolid(Device* device, RenderPass* renderPass, Swapchain* sw
     };
 
     createInternal(device, renderPass, swapchain,
-        "shaders/solid_vert.spv", "shaders/solid_frag.spv", binding, attrs);
+        "shaders/solid/solid_vert.spv", "shaders/solid/solid_frag.spv", binding, attrs);
 }
 
 void Pipeline::createRound(Device* device, RenderPass* renderPass, Swapchain* swapchain) {
@@ -33,7 +33,26 @@ void Pipeline::createRound(Device* device, RenderPass* renderPass, Swapchain* sw
     };
 
     createInternal(device, renderPass, swapchain,
-        "shaders/round_solid_vert.spv", "shaders/round_solid_frag.spv", binding, attrs);
+        "shaders/round/round_solid_vert.spv", "shaders/round/round_solid_frag.spv", binding, attrs);
+}
+
+void Pipeline::createRoundTri(Device* device, RenderPass* renderPass, Swapchain* swapchain) {
+    VkVertexInputBindingDescription binding{};
+    binding.binding = 0;
+    binding.stride = sizeof(TriVertex);
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    std::vector<VkVertexInputAttributeDescription> attrs = {
+        { 0, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(TriVertex, pos)    },
+        { 1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TriVertex, color)  },
+        { 2, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(TriVertex, p0)     },
+        { 3, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(TriVertex, p1)     },
+        { 4, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(TriVertex, p2)     },
+        { 5, 0, VK_FORMAT_R32_SFLOAT,          offsetof(TriVertex, radius) },
+    };
+
+    createInternal(device, renderPass, swapchain,
+        "shaders/round/round_tri_vert.spv", "shaders/round/round_tri_frag.spv", binding, attrs);
 }
 
 void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain,
@@ -124,7 +143,7 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if (vkCreatePipelineLayout(device_->get(), &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS) {
-        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create pipeline layout"));
+        re::ReLog::error(re::Prefix::VULKAN, "failed to create pipeline layout");
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -144,7 +163,7 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     if (vkCreateGraphicsPipelines(device_->get(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_) != VK_SUCCESS) {
-        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create graphics pipeline"));
+        re::ReLog::error(re::Prefix::VULKAN, "failed to create graphics pipeline");
     }
 
     vkDestroyShaderModule(device_->get(), fragShaderModule, nullptr);
@@ -182,7 +201,7 @@ std::vector<char> Pipeline::readFile(const std::string& path) {
     std::ifstream file(path, std::ios::ate | std::ios::binary);
     if (!file.is_open())
     {
-        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to open file" + path));
+        re::ReLog::error(re::Prefix::VULKAN, "failed to open file: " + path);
     }
     size_t fileSize = static_cast<size_t>(file.tellg());
     std::vector<char> buffer(fileSize);

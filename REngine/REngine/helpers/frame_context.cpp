@@ -22,7 +22,7 @@ void FrameContext::createSyncObjects(Device* device, size_t frameCount) {
             vkCreateSemaphore(device->get(), &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS ||
             vkCreateFence(device->get(), &fenceInfo, nullptr, &inFlightFence_[i]) != VK_SUCCESS
             ) {
-            re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create sync objects for a frame"));
+            re::ReLog::error(re::Prefix::VULKAN, "failed to create sync objects for a frame");
 
         }
     }
@@ -43,7 +43,7 @@ void FrameContext::beginFrame(Swapchain* swapchain, uint32_t* imageIndexOut) {
         return;
     }
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to acquire swapchain image"));
+        re::ReLog::error(re::Prefix::VULKAN, "failed to acquire swapchain image");
     }
 
     vkResetFences(device_->get(), 1, &inFlightFence_[currentFrame_]);
@@ -62,7 +62,7 @@ void FrameContext::endFrame(Device* device, Swapchain* swapchain, uint32_t image
     submitInfo.pSignalSemaphores = &renderFinishedSemaphores_[currentFrame_];
 
     if (vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, inFlightFence_[currentFrame_]) != VK_SUCCESS) {
-        re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to submit draw command buffer"));
+        re::ReLog::error(re::Prefix::VULKAN, "failed to submit draw command buffer");
     }
 
     VkSwapchainKHR swapchainHandle = swapchain->get();
@@ -108,7 +108,7 @@ std::vector<VkFramebuffer> FrameContext::createFramebuffer(Device* device, Swapc
             framebufferInfo.layers = 1;
 
         if (vkCreateFramebuffer(device_->get(), &framebufferInfo, nullptr, &framebuffers_[i]) != VK_SUCCESS) {
-            re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create framebuffer"));
+            re::ReLog::error(re::Prefix::VULKAN, "failed to create framebuffer");
         }
     }
     return framebuffers_;

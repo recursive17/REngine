@@ -1,6 +1,24 @@
 #include"../rengine.hpp"
 using namespace re;
 
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+	VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+	VkDebugUtilsMessageTypeFlagsEXT type,
+	const VkDebugUtilsMessengerCallbackDataEXT* data,
+	void* userData) {
+
+	if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+		re::ReLog::report(re::Prefix::VULKAN, data->pMessage);
+	}
+	else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+		re::ReLog::warning(re::Prefix::VULKAN, data->pMessage);
+	}
+	else {
+		re::ReLog::info(re::Prefix::VULKAN, data->pMessage);
+	}
+
+	return VK_FALSE;
+}
 
 void Device::createInstance(){
 
@@ -35,14 +53,39 @@ void Device::createInstance(){
 		}
 		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance_);
 		if (result != VK_SUCCESS) {
-			re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create instance"));
+			re::ReLog::error(re::Prefix::VULKAN, "failed to create instance");
 		}
 
 }
+
+void Device::createDebugMessenger() {
+	if (!enableValidation) return;
+
+	VkDebugUtilsMessengerCreateInfoEXT info{};
+	info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	info.messageSeverity =
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	info.messageType =
+		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	info.pfnUserCallback = debugCallback;
+
+	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)
+		vkGetInstanceProcAddr(instance_, "vkCreateDebugUtilsMessengerEXT");
+
+	if (func == nullptr || func(instance_, &info, nullptr, &debugMessenger_) != VK_SUCCESS) {
+		re::ReLog::warning(re::Prefix::VULKAN, "failed to create debug messenger");
+		return;
+	}
+	re::ReLog::success(re::Prefix::VULKAN, "debug messenger is created");
+}
+
 void Device::createSurface(GLFWwindow* window) {
 	VkResult result = glfwCreateWindowSurface(instance_, window, nullptr, &surface_);
 	if (result != VK_SUCCESS) {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create surface"));
+		re::ReLog::error(re::Prefix::VULKAN, "failed to create surface");
 	}
 
 }
@@ -61,7 +104,7 @@ void Device::pickPhysicalDevice() {
 		physicalDevice_ = *bestDeviceIt;
 	}
 	else {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to find a suitable GPU"));
+		re::ReLog::error(re::Prefix::VULKAN, "failed to find a suitable GPU");
 	}
 
 	{
@@ -89,6 +132,7 @@ int Device::rateDevice(VkPhysicalDevice device) {
 	
 	return score;
 }
+
 void Device::findQueueFamilies() {
 	uint32_t queueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queueFamilyCount, nullptr);
@@ -116,9 +160,9 @@ void Device::createLogicalDevice() {
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	
 	if (!graphicsQueueFamilyIndex_.has_value() || !presentQueueFamilyIndex_.has_value()) {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to find suitable queue families (not has_value())"));
-
+		re::ReLog::error(re::Prefix::VULKAN, "failed to find suitable queue families (not has_value())");
 	}
+
 	std::set<uint32_t> uniqueQueueFamilies= {graphicsQueueFamilyIndex_.value(), presentQueueFamilyIndex_.value()};
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	float queuePriority = 1.0f;
@@ -144,7 +188,7 @@ void Device::createLogicalDevice() {
 	VkResult result = vkCreateDevice(physicalDevice_, &deviceCreateInfo, nullptr, &device_);
 
 	if (result != VK_SUCCESS) {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create logical device GPU"));
+		re::ReLog::error(re::Prefix::VULKAN, "failed to create logical device GPU");
 	}
 
 
@@ -188,10 +232,16 @@ Device::~Device() {
 	if (surface_ != VK_NULL_HANDLE) {
 		vkDestroySurfaceKHR(instance_, surface_, nullptr);
 	}
+
+	if (debugMessenger_ != VK_NULL_HANDLE) {
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)
+			vkGetInstanceProcAddr(instance_, "vkDestroyDebugUtilsMessengerEXT");
+		if (func) func(instance_, debugMessenger_, nullptr);
+	}
+
 	if (instance_ != VK_NULL_HANDLE) {
 		vkDestroyInstance(instance_, nullptr);
 	}
-
 }
 
 std::vector<const char*> Device::getRequiredExtensions() {
@@ -216,7 +266,7 @@ void Device::createAllocator() {
 		allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 
 	if (vmaCreateAllocator(&allocatorInfo, &allocator_)!=VK_SUCCESS) {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create vma allocator"));
+		re::ReLog::error(re::Prefix::VULKAN, "failed to create vma allocator");
 	}
 
 }

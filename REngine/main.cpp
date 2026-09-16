@@ -1,10 +1,11 @@
 #include<iostream>
+#include<cstdio>
 #include"REngine/REngine.hpp"
 #include"REngine/utils/log.hpp"
 
 int main()
 {
-
+	setvbuf(stdout, nullptr, _IONBF, 0);
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	GLFWwindow* window = glfwCreateWindow(800, 600, "REngine", nullptr, nullptr);

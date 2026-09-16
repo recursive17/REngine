@@ -12,7 +12,7 @@ void CommandContext::createCommandPool(Device* device) {
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	if (vkCreateCommandPool(device_->get(), &poolInfo, nullptr, &commandPool_) != VK_SUCCESS) {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to create command pool"));
+		re::ReLog::error(re::Prefix::VULKAN, "failed to create command pool");
 
 	}
 }
@@ -26,7 +26,7 @@ void CommandContext::createCommandBuffer(size_t count) {
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
 	if (vkAllocateCommandBuffers(device_->get(), &allocInfo, commandBuffer_.data())) {
-		re::ReLog::error(re::Prefix::VULKAN, std::runtime_error("failed to allocate command buffers"));
+		re::ReLog::error(re::Prefix::VULKAN, "failed to allocate command buffers");
 	}
 }
 

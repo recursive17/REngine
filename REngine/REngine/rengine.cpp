@@ -7,6 +7,7 @@ namespace {
     re::RenderPass renderPass;
     re::Pipeline pipeline;
     re::Pipeline roundPipeline;
+    re::Pipeline triRoundPipeline;
     re::CommandContext cmdContext;
     re::FrameContext frameContext;
     render::Renderer renderer;
@@ -15,6 +16,7 @@ namespace {
 void re::init(GLFWwindow* window) {
 
     device.createInstance();
+    device.createDebugMessenger();
     device.createSurface(window);
     device.pickPhysicalDevice();
     device.findQueueFamilies();
@@ -36,8 +38,7 @@ void re::init(GLFWwindow* window) {
 
     roundPipeline.createRound(&device, &renderPass, &swapchain);
         re::ReLog::success(re::Prefix::VULKAN, "round pipeline is created");
-
-    //
+    
 
     cmdContext.createCommandPool(&device);
     cmdContext.createCommandBuffer(swapchain.getImageCount());
@@ -48,19 +49,19 @@ void re::init(GLFWwindow* window) {
     frameContext.createFramebuffer(&device, &swapchain, &renderPass);
         re::ReLog::success(re::Prefix::VULKAN, "class framebuffer is created!");
 
-    renderer.init(&device, &swapchain, &renderPass, &pipeline, &roundPipeline, &cmdContext, &frameContext);
-    
-    
+    renderer.init(&device, &swapchain, &renderPass, &pipeline, &roundPipeline, &triRoundPipeline, &cmdContext, &frameContext);
 }
 
 void re::render() {
     renderer.beginFrame();
 
-    //I MADE IT
-    renderer.drawTriangle({ 200.0f, 200.0f }, { 100.0f, 100.0f}, { 135, 255, 13, 255 });
     //
-    renderer.drawQuad({ -0.5f, -0.5f }, { 0.3f, 0.2f }, { 12, 25, 255, 255 });
-    renderer.drawRoundQuad({ 0.2f, 0.2f }, { 0.4f, 0.4f }, 0.05f, { 12, 25, 255, 90 }); 
-    renderer.drawRoundQuad({ 0.5f, -0.4f }, { 0.4f, 0.4f }, 0.1f, { 12, 25, 255, 255 });
+    renderer.drawQuad({ 50, 50 }, { 100, 60 }, { 12, 25, 255, 255 });
+    renderer.drawRoundQuad({ 200, 50 }, { 100, 100 }, 12, { 192, 21, 11, 255 });
+    renderer.drawRoundQuad({ 350, 50 }, { 100, 100 }, 50, { 20, 200, 90, 255 });  
+    renderer.drawRoundTriangle({ 200, 250 }, { 120, 120 }, 0, { 12, 25, 255, 255 });
+    renderer.drawRoundTriangle({ 350, 250 }, { 120, 120 }, 8, { 12, 25, 255, 255 });
+    renderer.drawRoundTriangle({ 500, 250 }, { 120, 120 }, 25, { 12, 25, 255, 255 });
+
     renderer.endFrame();
 }

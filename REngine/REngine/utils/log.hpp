@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 namespace re {
@@ -25,17 +26,25 @@ namespace re {
 			}
 		}
 	public:
-		static void error(Prefix pr, std::exception ex) {
-			std::cerr << RED << "[" << prefixToString(pr) << "][Exception] " << ex.what() << std::endl;
-			throw ex;
+		static void error(Prefix pr, std::string message) {
+			std::cerr << RED << "[" << prefixToString(pr) << "][Error] " << message << RESET << std::endl;
+			throw std::runtime_error(message);
+		}
+
+		static void report(Prefix pr, std::string message) {
+			std::cerr << RED << "[" << prefixToString(pr) << "][Error] " << message << RESET << std::endl;
+		}
+
+		static void info(Prefix pr, std::string message) {
+			std::cerr << "[" << prefixToString(pr) << "][Info] " << message << RESET << std::endl;
 		}
 
 		static void warning(Prefix pr, std::string message) {
-			std::cerr << YELLOW << "[" << prefixToString(pr) << "][Warning] " << message << std::endl;
+			std::cerr << YELLOW << "[" << prefixToString(pr) << "][Warning] " << message << RESET << std::endl;
 		}
 
 		static void success(Prefix pr, std::string message) {
-			std::cerr << GREEN << "[" << prefixToString(pr) << "][Success] " << message << std::endl;
+			std::cerr << GREEN << "[" << prefixToString(pr) << "][Success] " << message << RESET << std::endl;
 		}
 	};
 
