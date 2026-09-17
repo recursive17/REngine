@@ -2,13 +2,22 @@
 #include<cstdio>
 #include"REngine/REngine.hpp"
 #include"REngine/utils/log.hpp"
+#include"REngine/utils/settings.hpp"
 
 int main()
 {
 	setvbuf(stdout, nullptr, _IONBF, 0);
+
+	re::Settings settings;
+
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow* window = glfwCreateWindow(800, 600, "REngine", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(
+		static_cast<int>(settings.windowWidth), 
+		static_cast<int>(settings.windowHeight),
+		"REngine",
+		nullptr, nullptr);
+	
 	try {
 		re::init(window);
 	}
