@@ -14,7 +14,11 @@ add_executable(REngine
     "REngine/helpers/pipeline.cpp"
     "REngine/utils/helpers/recol.cpp"
     "REngine/utils/helpers/revec.cpp"
- "REngine/helpers/vma_impl.cpp" "REnder/renderer.cpp")
+ "REngine/helpers/vma_impl.cpp" "REnder/renderer.cpp"
+    "REngine/helpers/texture.cpp"
+    "REngine/helpers/texture_manager.cpp"
+    "REngine/utils/helpers/stb_image_impl.cpp"
+    "REngine/logo.cpp")
 
 target_include_directories(REngine PRIVATE
     ${Vulkan_INCLUDE_DIRS}
@@ -84,4 +88,10 @@ add_custom_command(TARGET REngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${SPIRV_BINARY_DIR}
     $<TARGET_FILE_DIR:REngine>/shaders
+)
+
+add_custom_command(TARGET REngine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/src/textures
+    $<TARGET_FILE_DIR:REngine>/textures
 )

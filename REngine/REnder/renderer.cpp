@@ -3,13 +3,14 @@
 using namespace render;
 
 void Renderer::init(re::Device* device, re::Swapchain* swapchain, re::RenderPass* renderPass,
-    re::Pipeline* pipeline, re::Pipeline* roundPipeline, re::Pipeline* triPipeline,
+    re::Pipeline* pipeline, re::Pipeline* roundPipeline, re::Pipeline* imagePipeline, re::Pipeline* triPipeline,
     re::CommandContext* cmdContext, re::FrameContext* frameContext) {
     device_ = device;
     swapchain_ = swapchain;
     renderPass_ = renderPass;
     pipeline_ = pipeline;
     roundPipeline_ = roundPipeline;
+    imagePipeline_ = imagePipeline;
     triPipeline_ = triPipeline;
     cmdContext_ = cmdContext;
     frameContext_ = frameContext;
@@ -17,6 +18,8 @@ void Renderer::init(re::Device* device, re::Swapchain* swapchain, re::RenderPass
     vertexBuffer_.create(device_, sizeof(re::Vertex) * MAX_VERTICES,
         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     roundVertexBuffer_.create(device_, sizeof(re::RoundVertex) * MAX_VERTICES,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    imageVertexBuffer_.create(device_, sizeof(re::ImageVertex) * MAX_VERTICES,
         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     triVertexBuffer_.create(device_, sizeof(re::TriVertex) * MAX_VERTICES,
         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
@@ -34,7 +37,10 @@ void Renderer::beginFrame() {
 
     vertexCount_ = 0;
     roundVertexCount_ = 0;                                  
+    imageVertexCount_ = 0;
+    imageDraws_.clear();
     triVertexCount_ = 0;
+   
 
     VkClearValue clearColor = { {{0.05f, 0.05f, 0.08f, 1.0f}} };
     VkRenderPassBeginInfo renderPassInfo{};
@@ -97,6 +103,25 @@ void Renderer::endFrame() {
         vkCmdBindVertexBuffers(currentCmd_, 0, 1, buffers, offsets);
 
         vkCmdDraw(currentCmd_, roundVertexCount_, 1, 0, 0);
+    }
+
+    if (imageVertexCount_ > 0) {
+        void* data;
+        imageVertexBuffer_.map(&data);
+        memcpy(data, imageVertexCpuBuffer_, sizeof(re::ImageVertex) * imageVertexCount_);
+        imageVertexBuffer_.unmap();
+
+        vkCmdBindPipeline(currentCmd_, VK_PIPELINE_BIND_POINT_GRAPHICS, imagePipeline_->get());
+        VkBuffer buffers[] = { imageVertexBuffer_.get() };
+        vkCmdBindVertexBuffers(currentCmd_, 0, 1, buffers, offsets);
+
+        for (const auto& draw : imageDraws_) {
+            VkDescriptorSet set = draw.texture->getDescriptorSet();
+            vkCmdBindDescriptorSets(currentCmd_, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                imagePipeline_->getLayout(), 0, 1, &set, 0, nullptr);
+
+            vkCmdDraw(currentCmd_, 6, 1, draw.firstVertex, 0);
+        }
     }
 
     if (triVertexCount_ > 0) {
@@ -217,6 +242,30 @@ void Renderer::drawRoundQuad(re::ReVec2 pos, re::ReVec2 size, float radius, re::
 
     re::RoundVertex vertices[6] = { vA, vB, vC, vA, vC, vD };
     drawRoundVertices(vertices, 6);
+}
+
+void Renderer::drawImage(re::Texture* texture, re::ReVec2 pos, re::ReVec2 size,
+    float radius, re::ReCol tint) {
+    if (!texture) return;
+    assert(imageVertexCount_ + 6 <= MAX_VERTICES && "too many image vertices");
+
+    float r = tint.getRedf(), g = tint.getGreenf(), b = tint.getBluef(), a = tint.getAlphaf();
+
+    re::ReVec2 p1 = pixelToNDC({ pos.x_,           pos.y_ });
+    re::ReVec2 p2 = pixelToNDC({ pos.x_ + size.x_, pos.y_ });
+    re::ReVec2 p3 = pixelToNDC({ pos.x_ + size.x_, pos.y_ + size.y_ });
+    re::ReVec2 p4 = pixelToNDC({ pos.x_,           pos.y_ + size.y_ });
+
+    re::ImageVertex v1{ { p1.x_, p1.y_ }, { 0.0f, 0.0f }, { size.x_, size.y_ }, radius, { r,g,b,a } };
+    re::ImageVertex v2{ { p2.x_, p2.y_ }, { 1.0f, 0.0f }, { size.x_, size.y_ }, radius, { r,g,b,a } };
+    re::ImageVertex v3{ { p3.x_, p3.y_ }, { 1.0f, 1.0f }, { size.x_, size.y_ }, radius, { r,g,b,a } };
+    re::ImageVertex v4{ { p4.x_, p4.y_ }, { 0.0f, 1.0f }, { size.x_, size.y_ }, radius, { r,g,b,a } };
+
+    imageDraws_.push_back({ texture, imageVertexCount_ });
+
+    re::ImageVertex quad[6] = { v1, v2, v3, v1, v3, v4 };
+    memcpy(&imageVertexCpuBuffer_[imageVertexCount_], quad, sizeof(quad));
+    imageVertexCount_ += 6;
 }
 
 

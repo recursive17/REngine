@@ -36,6 +36,25 @@ void Pipeline::createRound(Device* device, RenderPass* renderPass, Swapchain* sw
         "shaders/round/round_solid_vert.spv", "shaders/round/round_solid_frag.spv", binding, attrs);
 }
 
+void Pipeline::createImage(Device* device, RenderPass* renderPass, Swapchain* swapchain, VkDescriptorSetLayout textureLayout) {
+    VkVertexInputBindingDescription binding{};
+    binding.binding = 0;
+    binding.stride = sizeof(ImageVertex);
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    std::vector<VkVertexInputAttributeDescription> attrs = {
+        { 0, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(ImageVertex, pos)    },
+        { 1, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(ImageVertex, uv)     },
+        { 2, 0, VK_FORMAT_R32G32_SFLOAT,       offsetof(ImageVertex, size)   },
+        { 3, 0, VK_FORMAT_R32_SFLOAT,          offsetof(ImageVertex, radius) },
+        { 4, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(ImageVertex, color)  },
+    };
+
+    createInternal(device, renderPass, swapchain,
+        "shaders/image/image_vert.spv", "shaders/image/image_frag.spv",
+        binding, attrs, { textureLayout });
+}
+
 void Pipeline::createRoundTri(Device* device, RenderPass* renderPass, Swapchain* swapchain) {
     VkVertexInputBindingDescription binding{};
     binding.binding = 0;
@@ -58,7 +77,8 @@ void Pipeline::createRoundTri(Device* device, RenderPass* renderPass, Swapchain*
 void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain,
     const std::string& vertPath, const std::string& fragPath,
     const VkVertexInputBindingDescription& binding,
-    const std::vector<VkVertexInputAttributeDescription>& attributes) {
+    const std::vector<VkVertexInputAttributeDescription>& attributes,
+    const std::vector<VkDescriptorSetLayout>& setLayouts) {
 
     device_ = device;
 
@@ -139,7 +159,8 @@ void Pipeline::createInternal(Device* device, RenderPass* renderPass, Swapchain*
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+    pipelineLayoutInfo.pSetLayouts = setLayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if (vkCreatePipelineLayout(device_->get(), &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS) {

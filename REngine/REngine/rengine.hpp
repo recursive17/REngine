@@ -5,6 +5,9 @@
 #include<vector>
 #include<optional>
 #include<set>
+#include<span>
+#include<unordered_map>
+#include<memory>
 #include<vk_mem_alloc.h>
 #include"utils/log.hpp"
 namespace re {
@@ -19,6 +22,14 @@ namespace re {
 		float uv[2];
 		float size[2];
 		float radius;
+	};
+
+	struct ImageVertex {
+		float pos[2];
+		float uv[2];
+		float size[2];
+		float radius;
+		float color[4];
 	};
 
 	struct TriVertex {
@@ -128,6 +139,7 @@ namespace re {
 		//void create(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 		void createSolid(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 		void createRound(Device* device, RenderPass* renderPass, Swapchain* swapchain);
+		void createImage(Device* device, RenderPass* renderPass, Swapchain* swapchain, VkDescriptorSetLayout textureLayout);
 		void createRoundTri(Device* device, RenderPass* renderPass, Swapchain* swapchain);
 
 		VkPipeline get() const;
@@ -138,7 +150,8 @@ namespace re {
 		void createInternal(Device* device, RenderPass* renderPass, Swapchain* swapchain,
 			const std::string& vertPath, const std::string& fragPath,
 			const VkVertexInputBindingDescription& binding,
-			const std::vector<VkVertexInputAttributeDescription>& attributes);
+			const std::vector<VkVertexInputAttributeDescription>& attributes,
+			const std::vector<VkDescriptorSetLayout>& setLayouts = {});
 		VkShaderModule createShaderModule(const std::vector<char>& code);
 		std::vector<char> readFile(const std::string& path);
 
@@ -213,6 +226,63 @@ namespace re {
 
 	};
 
+	class Texture {
+	public:
+		// Load from assets 
+		void loadFromFile(Device* device, CommandContext* cmdContext, 
+			VkDescriptorPool pool, VkDescriptorSetLayout layout, 
+			const std::string& path);
+		
+		// Load from massive
+		void loadFromMemory(Device* device, CommandContext* cmdContext,
+			VkDescriptorPool pool, VkDescriptorSetLayout layout,
+			std::span<const unsigned char> fileBytes);
 
+		VkDescriptorSet getDescriptorSet() const { return descriptorSet_; }
 
+		uint32_t getWidht() const { return width_; }
+		uint32_t getHeight() const { return height_; }
+
+		~Texture();
+
+	private:
+		void createFromPixels(const unsigned char* pixels, int w, int h);
+		void createImageView();
+		void createSampler();
+		void allocateDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout);
+
+		VkImage				image_			{ VK_NULL_HANDLE };
+		VmaAllocation		allocation_		{ VK_NULL_HANDLE };
+		VkImageView			imageView_		{ VK_NULL_HANDLE };
+		VkSampler			sampler_		{ VK_NULL_HANDLE };
+		VkDescriptorSet		descriptorSet_	{ VK_NULL_HANDLE };
+
+		uint32_t			width_			{ 0 };
+		uint32_t			height_			{ 0 };
+
+		Device*				device_			{ nullptr };
+		CommandContext*		cmdContext_		{ nullptr };
+	};
+
+	class TextureManager {
+	public:
+		void init(Device* device, CommandContext* cmdContext);
+		Texture* load(const std::string& name, const std::string& path);
+		Texture* loadFromMemory(const std::string& name, std::span<const unsigned char> bytes);
+		Texture* get(const std::string& name) const;
+
+		VkDescriptorSetLayout getLayout() const { return setLayout_; }
+
+		~TextureManager();
+	
+	private:
+		static constexpr uint32_t MAX_TEXTURES = 256;
+
+		Device*					device_		{ nullptr };
+		CommandContext*			cmdContext_	{ nullptr };
+		VkDescriptorSetLayout	setLayout_	{ VK_NULL_HANDLE };
+		VkDescriptorPool		pool_		{ VK_NULL_HANDLE };
+
+		std::unordered_map<std::string, std::unique_ptr<Texture>> textures_;
+	};
 }
