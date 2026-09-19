@@ -1,5 +1,5 @@
 #include "../rengine.hpp"
-#include "../utils/stb_image.h"
+#include <stb_image.h>
 using namespace re;
 
 static void transitionImageLayout(VkCommandBuffer cmd, VkImage image,

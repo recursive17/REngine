@@ -7,7 +7,8 @@ namespace re {
 	enum class Prefix {
 		RE,
 		RENDER,
-		VULKAN
+		VULKAN,
+		AUDIO
 	};
 
 	class ReLog {
@@ -22,6 +23,7 @@ namespace re {
 			case Prefix::RE:     return "RE";
 			case Prefix::RENDER: return "RENDER";
 			case Prefix::VULKAN: return "VULKAN";
+			case Prefix::AUDIO:  return "AUDIO";
 			default:             return "UNKNOWN";
 			}
 		}

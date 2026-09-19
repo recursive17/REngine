@@ -1,0 +1,6 @@
+python tools/embed_image.py src/textures/logo.png
+
+python tools/embed_audio.py src/audio/theme.ogg --name main_theme
+
+formats image: png jpg bmp tga gif 
+formats audio: wav ogg mp3 flac

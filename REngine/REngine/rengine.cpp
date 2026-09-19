@@ -1,6 +1,8 @@
 ﻿#include"rengine.hpp"
 #include"../REnder/renderer.hpp"
-#include"logo.h"
+#include"assets/logo.h"
+#include"audio.hpp"
+#include"assets/click.h"
 
 namespace {
     re::Device device;
@@ -14,6 +16,7 @@ namespace {
     re::Pipeline imagePipeline;
     re::FrameContext frameContext;
     render::Renderer renderer;
+    re::SoundManager soundManager;
 }
 
 void re::init(GLFWwindow* window) {
@@ -60,6 +63,10 @@ void re::init(GLFWwindow* window) {
     frameContext.createSyncObjects(&device, swapchain.getImageCount());
     frameContext.createFramebuffer(&device, &swapchain, &renderPass);
         re::ReLog::success(re::Prefix::VULKAN, "class framebuffer is created!");
+
+    soundManager.init();
+    soundManager.loadFromMemory("click", re::assets::clickWav());
+    soundManager.play("click");
 
     renderer.init(&device, &swapchain, &renderPass, &pipeline, &roundPipeline, &imagePipeline, &triRoundPipeline, &cmdContext, &frameContext);
 }

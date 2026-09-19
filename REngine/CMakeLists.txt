@@ -17,14 +17,23 @@ add_executable(REngine
  "REngine/helpers/vma_impl.cpp" "REnder/renderer.cpp"
     "REngine/helpers/texture.cpp"
     "REngine/helpers/texture_manager.cpp"
-    "REngine/utils/helpers/stb_image_impl.cpp"
-    "REngine/logo.cpp")
+    "REngine/helpers/stb_image_impl.cpp"
+    "REngine/helpers/miniaudio_impl.cpp"
+    "REngine/helpers/sound.cpp"
+    "REngine/helpers/sound_manager.cpp"
+    "REngine/assets/logo.cpp"
+    "REngine/assets/click.cpp")
 
 target_include_directories(REngine PRIVATE
     ${Vulkan_INCLUDE_DIRS}
 )
 target_include_directories(REngine PRIVATE
     ${CMAKE_SOURCE_DIR}/thirdparty/VMA/include
+)
+
+target_include_directories(REngine PRIVATE
+    ${CMAKE_SOURCE_DIR}/thirdparty/stb
+    ${CMAKE_SOURCE_DIR}/thirdparty/miniaudio
 )
 
 target_link_libraries(REngine PRIVATE
