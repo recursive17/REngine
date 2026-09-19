@@ -15,7 +15,7 @@ int main()
 	GLFWwindow* window = glfwCreateWindow(
 		static_cast<int>(settings.windowWidth), 
 		static_cast<int>(settings.windowHeight),
-		"REngine",
+		settings.windowTitle.c_str(),
 		nullptr, nullptr);
 	
 	try {
@@ -31,6 +31,8 @@ int main()
 		glfwPollEvents();
 		re::render();
 	}
+	
+	
 
 
 

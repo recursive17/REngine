@@ -116,6 +116,7 @@ namespace re {
 		std::vector<VkImageView> imageViews_;
 		VkFormat				 imageFormat_;
 		VkExtent2D				 extent_; 
+		VkSwapchainKHR			 swapchainOld_	{ VK_NULL_HANDLE };
 
 	};
 

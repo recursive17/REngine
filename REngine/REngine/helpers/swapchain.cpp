@@ -38,6 +38,13 @@ void Swapchain::create(Device* device, GLFWwindow* window) {
 		createInfo.imageExtent = extent;
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		if (swapchainOld_ != VK_NULL_HANDLE) {
+			createInfo.oldSwapchain = swapchainOld_;
+		}
+		else {
+			createInfo.oldSwapchain = VK_NULL_HANDLE;
+		}
+		//simple it
 
 
 	uint32_t graphicsFamily = device->getGraphicsQueueFamily();
@@ -56,7 +63,6 @@ void Swapchain::create(Device* device, GLFWwindow* window) {
 	createInfo.preTransform = capabilities.currentTransform;
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 
 	VkResult result = vkCreateSwapchainKHR(device->get(), &createInfo, nullptr, &swapchain_);
@@ -101,7 +107,8 @@ void Swapchain::createImageViews() {
 void Swapchain::recreate(Device* device, GLFWwindow* window) {
 
 	vkDeviceWaitIdle(device_->get());
-
+	
+	swapchainOld_ = swapchain_;
 	cleanup();
 	create(device, window);
 	createImageViews();
