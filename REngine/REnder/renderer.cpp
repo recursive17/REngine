@@ -1,5 +1,7 @@
 ﻿#include"renderer.hpp"
 #include<cassert>
+#include <cstring>  // memcpy
+#include <cmath>    // sqrtf
 using namespace render;
 
 void Renderer::init(re::Device* device, re::Swapchain* swapchain, re::RenderPass* renderPass,
